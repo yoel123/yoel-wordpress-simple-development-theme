@@ -1,9 +1,6 @@
 <?php
 
-function ytitle()
-{
-	
-}//end ytitle
+
 
 
 function ycss_link($file)
