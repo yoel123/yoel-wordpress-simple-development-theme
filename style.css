@@ -1,0 +1,23 @@
+/*
+    Theme Name: sample_theme
+    Theme URI: google.com
+    Author: yoel
+    Author URI: walla.co.il
+    Description: this is a simple example theme i made.
+    Version: 1.0
+*/
+	
+.bg-primary ul li a,.bg-primary  a
+{
+
+	color:white !important;
+	text-align: center;
+}
+.bg-primary ul li a:hover,.bg-primary ul li a.current-menu-item
+{
+	color:#337AB7 !important;
+}
+.test_sidebar
+{
+	font-weight:bold;
+}
