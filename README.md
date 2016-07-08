@@ -9,7 +9,7 @@ i work on a few other projects so it will take time to update this.
 
 <br>
 note:<br>
-*integrated bpptstrap css framework
+*integrated bootstrap css framework
 <br>
 
 if theirs any mistake or something you dont understand please contact me.
