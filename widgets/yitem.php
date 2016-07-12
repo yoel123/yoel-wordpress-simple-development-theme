@@ -24,11 +24,6 @@ class yitem extends WP_Widget
 		$vars = y_widget_vars("title,body,img,ytype",$instance);
 		extract($vars,EXTR_SKIP);
 		
-		//echo "<div class='yitem_".$ytype."'>";
-		//echo $before_title.$title.$after_title;
-		//echo "<p> ".$body."</p>";
-		//echo "<img src='".$img."'/>";
-		//echo "</div>";
 		 yitem_render($ytype,$vars);
     }
 	
