@@ -1,6 +1,9 @@
 <?php
 
-
+function ytitle()
+{
+	
+}//end ytitle
 
 
 function ycss_link($file)
@@ -34,7 +37,7 @@ function ymenu($theme_location,$menu_id='',$menu_class='')
 	);
 
 	$menu = wp_nav_menu($arr);
-	$menu = preg_replace( array( '#^<div[^>]*>#', '#</div>$#', '#^<ul[^>]*>#', '#</ul>$#' ), '', $menu );
+	$menu = preg_replace( array( '#^<div[^>]*>#', '#</div>$#', '#^<ul[^>]*>#', '#</ul>$#' ), '', $menu );//get rid of containers
 	echo 
 	'
 	<ul id="'.$menu_id.'" class="'.$menu_class.'">'.
@@ -60,28 +63,38 @@ function ydisplay_sidebar($name)
 
 function yreg_sidebar($name,$class="",$desc="",$before_title="<h2>",$after_title="</h2>")
 {
-	register_sidebar(array('name' => __( $name ),'class'=> $class,'id' => $name,'description' => __( $desc ),
-	'before_widget' => '<div id="%1$s" class="widget %2$s '.$class.'">',
-	'after_widget'  => '</div>',
-	'before_title' =>$before_title,'after_title' => $after_title));
+	$arr = array('name' => __( $name ),'class'=> $class,'id' => $name,'description' => __( $desc ),
+		'before_widget' => '<div id="%1$s" class="widget %2$s '.$class.'">',
+		'after_widget'  => '</div>',
+		'before_title' =>$before_title,'after_title' => $after_title);
+		
+	add_action( 'widgets_init', function()use( &$arr){
+		register_sidebar($arr);	
+	});
+	//add_action( 'widgets_init', create_function( '', 'register_widget("yitem");' ) );
 }//end yreg_sidebar
 
 function yshortc($name,$func)
 {
-	add_shortcode($name, $func());
+	add_shortcode($name, $func);
 }//end yshortc
 
-function ysimple_loop($class='')
+function ysimple_loop($class='',$show_excerpt=true)
 {
 	if ( have_posts() )
 	{
 		 while ( have_posts() )
-		 { the_post();?>
-			 <div class="ypost<?php echo $class;?> ">
+		 { global $post;the_post();?>
+			 <div class="ypost <?php echo $class;?> " id="post-<?php the_ID(); ?>">
 				 <h2><?php the_title() ;?></h2>
 				 <div class="tumb"><?phpthe_post_thumbnail(); ?></div>
-				 <div class="excerpt"><?php the_excerpt(); ?></div>
-				 <div class="y_date"><?php the_time('F j, Y');?></div>
+				<?php if($show_excerpt){ ?>
+					<div class="excerpt"><?php the_excerpt(); ?></div>
+					<a class="permalink" href='<?php echo get_permalink($post->ID); ?>'><?php echo YREAD_MORE;?></a>
+				<?php }else{ ?>
+					<div class="content"><?php the_content(); ?></div>
+				<?php }//end else ?>
+				 <div class="y_date"><?php the_time(YDATE_FORMAT); edit_post_link();?></div>
 			</div><!--end ypost-->
 			<?php
 		 }
@@ -91,10 +104,12 @@ function ysimple_loop($class='')
 	{
 		return false;
 	}
+	wp_reset_query();
 }
 
-function ycat_posts($name,$class='',$amount=100,$query=0)
-{
+function ycat_posts($name,$class='',$show_excerpt=true,$amount=100,$query=0)
+{ 
+
 	 if($query==0)
 	 {
 		 $args = array(
@@ -107,32 +122,64 @@ function ycat_posts($name,$class='',$amount=100,$query=0)
 	 {
 		$the_query = new WP_Query( $query ); 
 	 }
+	
 	// The Loop
-	if ( $the_query->have_posts() ) 
+	if( $the_query->have_posts() ) 
 	{
 
-		while ( $the_query->have_posts() ) 
-		{
-
-				$the_query->the_post();?>
-			 <div class="ypost<?php echo $class;?> ">
+		 while( $the_query->have_posts() )
+		 { global $post; $the_query->the_post();?>
+			 <div class="ypost <?php echo $class;?> " id="post-<?php the_ID(); ?>">
 				 <h2><?php the_title() ;?></h2>
-				 <div class="tumb">"<?phpthe_post_thumbnail(); ?></div>
-				 <div class="excerpt"><?php the_excerpt(); ?></div>
-				<div class="y_date"><?php the_time('F j, Y');?></div>
+				 <div class="tumb"><?php the_post_thumbnail(); ?></div>
+				<?php if($show_excerpt){ ?>
+					<div class="excerpt"><?php the_excerpt(); ?></div>
+					<a class="permalink" href='<?php echo get_permalink($post->ID); ?>'><?php echo YREAD_MORE;?></a>
+				<?php }else{ ?>
+					<div class="content"><?php the_content(); ?></div>
+				<?php }//end else ?>
+				 <div class="y_date"><?php the_time(YDATE_FORMAT); edit_post_link();?></div>
 			</div><!--end ypost-->
 			<?php
-		}
+		 }
 	}
 	else
 	{
 		return false;
 	}
+	wp_reset_query();
 }
 //$custom_query = new WP_Query('cat=-7,-8,-9'); // exclude any categories
 //$custom_query = new WP_Query('posts_per_page=3'); // limit number of posts
 //$custom_query = new WP_Query('order=ASC'); // reverse the post order
 //http://www.billerickson.net/code/wp_query-arguments/
+
+function ypaginate()
+{
+	global $wp_query;
+
+	$big = 999999999; // need an unlikely integer
+
+	echo paginate_links( array(
+		'base' => str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) ),
+		'format' => '?paged=%#%',
+		'current' => max( 1, get_query_var('paged') ),
+		'total' => $wp_query->max_num_pages
+	) );	
+}//end ypaginate
+
+function yupload_scripts($dir=false)
+{
+	if(!$dir)
+	{
+		$dir=get_template_directory_uri ()."/js/";
+	}
+	wp_enqueue_script('media-upload');
+	wp_enqueue_script('thickbox');
+	wp_enqueue_script('upload_media_widget', $dir.'upload-media.js', array('jquery'));
+
+	wp_enqueue_style('thickbox');
+}//end yupload_scripts
 
 function yadd_bootstrap()
 {
@@ -227,4 +274,98 @@ class yoption_page
    }
   
 }//end yoption_page
+
+/////custom widgets funcs////////////////
+
+function y_widget_vars($arr,$instance)
+{
+	if(!is_array($arr))
+	{
+		$arr = $pieces = explode(",", $arr);
+	}
+	$return_r = array();
+	foreach($arr as $item)
+	{
+		$return_r[$item] =(isset($instance[$item]))?$instance[$item]:''; 
+	}
+	//print_r( $return_r);
+	return $return_r;
+}
+
+function y_widget_text($name,$instance,$that)
+{
+	$in = "<input ";
+	$put = "/>";
+	
+	$data = y_widget_get_data($name,$instance,$that);
+	
+	$text = $in.
+	   "id = ".$data['g_id'].
+	   ' class="widefat"'.
+	   " name = '".$data['g_name']."'".
+	   "value = '".$data['i_value']."'".
+	   $put;
+	
+	return $text;
+}//end y_widget_text
+function y_widget_textarea($name,$instance,$that)
+{
+	$text = "<textarea ";
+	$area = "</textarea>"; 
+	
+	$data = y_widget_get_data($name,$instance,$that);
+	
+	$textarea =$text.
+	   "id = ".$data['g_id'].
+	   ' class="widefat"'.
+	   " name = '".$data['g_name']."'>".
+	   $data['i_value'].
+	   $area;
+	return $textarea;
+	
+}//end y_widget_textarea
+function y_widget_img($name,$instance,$that)
+{
+
+	$data = y_widget_get_data($name,$instance,$that);
+	$img = '
+	   <input type="text" name="'.$data['g_name'].'" value="'.$data['i_value'].'"  id= "'.$data['g_id'].'"/>
+	   <input class="yupload_image_btn" type="button" value="Upload Image" />';
+	return $img;  
+	
+}//end y_widget_img
+
+
+function y_widget_get_data($name,$instance,$that)
+{
+	$data=array();
+	$data['g_id']= $that->get_field_id($name);
+	$data['g_name']= $that->get_field_name($name);
+	$data['i_value']= (!empty($instance[$name]))?$instance[$name]:"";
+	
+	return $data;
+	
+}//end y_widget_get_data
+
+function y_widget_create_selectbox($name, $data,$instance,$that)
+{
+    $defult =(!empty($instance[$name]))?$instance[$name]:"";
+	$name = $that->get_field_name($name);
+	$id = $that->get_field_id($name);
+	
+	$html = '<select name="'.$name.'" id ="'.$id.'">';
+
+    foreach($data as $key=>$val) {
+		$defultdo = ($defult==$key)?' selected="selected"':"";
+		
+		$html.='<option value="' .$key. '" '.$defultdo.'>';
+        $html.=$val;
+        $html.="</option>";
+    }
+    $html.="</select>";
+
+    return $html;
+}//end y_widget_create_selectbox
+
+/////end custom widgets funcs////////////////
 ?>

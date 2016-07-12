@@ -21,3 +21,28 @@
 {
 	font-weight:bold;
 }
+
+
+/*core*/
+.yclear
+{
+	clear:both;
+}
+
+/** Pagination */
+.pagination {
+    background:#E7E6E5;
+    background:rgba(255,255,255,0.35);
+    padding:7px 10px 5px;
+    -webkit-border-radius:5px;
+    -moz-border-radius:5px;
+    border-radius:5px;
+}
+.pagination .page-numbers {
+    padding:3px 6px;
+    font-size:15px;
+    font-weight:bold;
+}
+.pagination .current {
+    color:#000;
+}

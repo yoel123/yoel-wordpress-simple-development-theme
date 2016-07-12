@@ -1,4 +1,4 @@
-	<div class="yfooter row bg-info">
+	<div class="yfooter row bg-info yclear ">
 		<div class="col-xs-12">
 		
 
