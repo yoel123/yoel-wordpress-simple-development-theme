@@ -12,7 +12,7 @@ ini_set('display_errors', 1);
 yreg_menu("ymain_menu","y_top menu");
 
 //sidbars
-yreg_sidebar("ybootom1","col-xs-12 text-center test_sidebar");
+yreg_sidebar("ybootom1","sidebar description");
 
 //shortcode
 yshortc("hellovelt",function($atts)
@@ -22,7 +22,7 @@ yshortc("hellovelt",function($atts)
 	
 });
 //[hellovelt t="is hello world in german"]
-
+add_theme_support( 'post-thumbnails' ); 
 //scripts
 yadd_bootstrap();
 yupload_scripts();

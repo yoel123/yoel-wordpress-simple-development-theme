@@ -22,7 +22,31 @@
 	font-weight:bold;
 }
 
+/*nav*/
+.nav ul li.menu-item-has-children:hover > ul ,.page_item_has_children:hover > ul 
+{
+	display: block;
+}
+.nav ul li ul,.children
+{
+    display: none;
+    width: auto;
+    position: absolute;
 
+    padding: 10px 10px;
+    background: #469CE6;
+    border-radius: 0 0 5px 5px;
+    z-index: 999;
+}
+@media only screen and (max-width:420px)and (min-width: 200px)
+{
+	.nav ul li ul,.children
+	{
+		display: block;
+		text-align: center;
+		position: static;
+	}
+}
 /*core*/
 .yclear
 {
@@ -46,3 +70,4 @@
 .pagination .current {
     color:#000;
 }
+

@@ -1,10 +1,22 @@
 <?php
 
-function ytitle()
-{
-	
-}//end ytitle
+/*
+table of contents:
+*misc funcs
+*menu
+*sidebars
+*shortcodes
+*wp loops
+*scripts
+*options page class
+*custom widgets funcs
+*
+*/
 
+
+//no config (incase some idiot didnt include config.php before this file)
+if(!defined(YREAD_MORE)){define("YREAD_MORE",'read more');}
+if(!defined(YDATE_FORMAT)){define("YDATE_FORMAT",'F j, Y');}
 
 function ycss_link($file)
 {
@@ -22,6 +34,20 @@ function yjs_link($file)
 	';
 	echo $html;
 }
+
+function ytemplate_url()
+{
+	bloginfo('template_url');
+}//end ytemplate_url
+
+//echo option
+function yecho_op($name)
+{
+	$yoption = get_option($name);
+	echo $yoption;
+}//end yecho_op
+
+/////////////menu///////////////
 
 function yreg_menu($location,$desc)
 {
@@ -46,10 +72,11 @@ function ymenu($theme_location,$menu_id='',$menu_class='')
 	';
 }//end ymenu
 
-function ytemplate_url()
-{
-	bloginfo('template_url');
-}//end ytemplate_url
+/////////////end menu///////////////
+
+
+
+////////sidebars//////////////
 
 function ydisplay_sidebar($name)
 {
@@ -61,9 +88,11 @@ function ydisplay_sidebar($name)
 }//end ydisplay_sidebar
 
 
-function yreg_sidebar($name,$class="",$desc="",$before_title="<h2>",$after_title="</h2>")
+function yreg_sidebar($name,$desc="",$before_title="<h2>",$after_title="</h2>")
 {
-	$arr = array('name' => __( $name ),'class'=> $class,'id' => $name,'description' => __( $desc ),
+	$class="";
+	$arr = array('name' => __( $name ),
+		'class'=> $class,'id' => $name,'description' => __( $desc ),
 		'before_widget' => '<div id="%1$s" class="widget %2$s '.$class.'">',
 		'after_widget'  => '</div>',
 		'before_title' =>$before_title,'after_title' => $after_title);
@@ -74,10 +103,20 @@ function yreg_sidebar($name,$class="",$desc="",$before_title="<h2>",$after_title
 	//add_action( 'widgets_init', create_function( '', 'register_widget("yitem");' ) );
 }//end yreg_sidebar
 
+////////end sidebars//////////////
+
+/////////////shortcodes//////////////
+
+
 function yshortc($name,$func)
 {
 	add_shortcode($name, $func);
 }//end yshortc
+
+/////////////end shortcodes//////////////
+
+/////////////wp loops//////////////
+
 
 function ysimple_loop($class='',$show_excerpt=true)
 {
@@ -87,10 +126,11 @@ function ysimple_loop($class='',$show_excerpt=true)
 		 { global $post;the_post();?>
 			 <div class="ypost <?php echo $class;?> " id="post-<?php the_ID(); ?>">
 				 <h2><?php the_title() ;?></h2>
-				 <div class="tumb"><?phpthe_post_thumbnail(); ?></div>
+				 <div class="tumb"><?php the_post_thumbnail(); ?></div>
 				<?php if($show_excerpt){ ?>
 					<div class="excerpt"><?php the_excerpt(); ?></div>
-					<a class="permalink" href='<?php echo get_permalink($post->ID); ?>'><?php echo YREAD_MORE;?></a>
+					<a class="permalink" href='<?php echo get_permalink($post->ID); ?>'>
+					<?php echo YREAD_MORE;?></a>
 				<?php }else{ ?>
 					<div class="content"><?php the_content(); ?></div>
 				<?php }//end else ?>
@@ -104,7 +144,10 @@ function ysimple_loop($class='',$show_excerpt=true)
 	{
 		return false;
 	}
+
 	wp_reset_query();
+
+	ypaginate();
 }
 
 function ycat_posts($name,$class='',$show_excerpt=true,$amount=100,$query=0)
@@ -134,7 +177,8 @@ function ycat_posts($name,$class='',$show_excerpt=true,$amount=100,$query=0)
 				 <div class="tumb"><?php the_post_thumbnail(); ?></div>
 				<?php if($show_excerpt){ ?>
 					<div class="excerpt"><?php the_excerpt(); ?></div>
-					<a class="permalink" href='<?php echo get_permalink($post->ID); ?>'><?php echo YREAD_MORE;?></a>
+					<a class="permalink" href='<?php echo get_permalink($post->ID); ?>'>
+					<?php echo YREAD_MORE;?></a>
 				<?php }else{ ?>
 					<div class="content"><?php the_content(); ?></div>
 				<?php }//end else ?>
@@ -147,7 +191,10 @@ function ycat_posts($name,$class='',$show_excerpt=true,$amount=100,$query=0)
 	{
 		return false;
 	}
+	
 	wp_reset_query();
+	
+	ypaginate();
 }
 //$custom_query = new WP_Query('cat=-7,-8,-9'); // exclude any categories
 //$custom_query = new WP_Query('posts_per_page=3'); // limit number of posts
@@ -168,6 +215,9 @@ function ypaginate()
 	) );	
 }//end ypaginate
 
+/////////////end wp loops//////////////
+
+/////////////scripts//////////
 function yupload_scripts($dir=false)
 {
 	if(!$dir)
@@ -205,10 +255,86 @@ function yadd_bootstrap()
 	});
 }//yadd_bootstrap
 
+function responsiveSlides_load_js($class="yslider")
+{
+	add_action( 'wp_enqueue_scripts', function()
+	{
+	
+		wp_enqueue_script(
+			'responsiveSlides',                                 //slug
+			"https://cdn.jsdelivr.net/jquery.responsiveslides/1.54/responsiveslides.min.js", //path
+			array('jquery'),                                      //dependencies
+			false,                                                //version
+			true                                                  //footer
+		);
+	});
+
+		//<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/jquery.slick/1.5.0/slick.css"/>
+		//<script type="text/javascript" src="//cdn.jsdelivr.net/jquery.slick/1.5.0/slick.min.js"></script>"	
+}//end slider_load_js
+
+function responsiveSlides_single_slider($class="yslider",$data = 0)
+{
+	//chack if jquery enqueued
+	if ( ! wp_script_is( 'jquery', 'enqueued' )) 
+	{
+
+        //Enqueue
+        wp_enqueue_script( 'jquery' );
+
+	}
+	add_action( 'wp_footer', function()use( &$class){
+		 
+			echo '
+			<script>
+			var $ = jQuery.noConflict();
+			$( document ).ready(function() {
+				$(".'.$class.'").responsiveSlides();
+				
+			});
+			</script>
+			'; 
+		 
+		 
+	}, 100);
+}
+function ywow_js()
+{
+	//chack if jquery enqueued
+	if ( ! wp_script_is( 'jquery', 'enqueued' )) {
+
+        //Enqueue
+        wp_enqueue_script( 'jquery' );
+
+	}
+	add_action( 'wp_enqueue_scripts', function()
+	{
+		wp_enqueue_style( 'animatecss', "https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css");
+			
+		wp_enqueue_script(
+			'ywowjs',                                 //slug
+			 "https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js", //path
+			array('jquery'),                                      //dependencies
+			false,                                                //version
+			true                                                  //footer
+		);
+	});
+	
+	add_action( 'wp_footer', function()use( &$class){
+		 
+			echo '
+			<script>
+			new WOW().init();
+			</script>
+			'; 
+		 
+		 
+	}, 100);
+}//end ywow_js
 //wp_list_cats('sort_column=name&optioncount=1&hierarchical=0');
+/////////////end scripts//////////
 
-
-//options page class
+//////////options page class////////////////
 
 class yoption_page 
 {
@@ -263,7 +389,8 @@ class yoption_page
 	 {
 		update_option($option, $val);
 	 }
-   }
+   }//end defult_val
+   
    function update_option($option,$post=false)
    {
 		if(!$post){$post=$option;}
@@ -271,9 +398,87 @@ class yoption_page
 		{
 			update_option($option, $_POST[$post]);
 		}
-   }
+   }//end update_option
+   
+   
+   function yoptions_do($arr,$string,$action)
+   {
+	    $return=array();
+		if($string)
+		{
+			$arr = explode(",", $arr);
+		}
+		if($action == "init")
+		{
+			foreach($arr as $r)
+			{
+				if(is_array($r))
+				{
+					$this->defult_val($r[0], $r[1]);
+				}
+				else
+				{
+					$this->defult_val($r ,"defult_val");
+				}
+				
+			}
+		}
+		if($action == "update")
+		{
+			foreach($arr as $r)
+			{
+				$this->update_option($r);
+			}
+		}
+		if($action == "get")
+		{
+			foreach($arr as $r)
+			{
+				$op= get_option($r);
+				$return[$r] = $op;
+			}
+			return $return;
+		}
+  }//end yoptions_do
   
+   function ytext_input($title,$name,$val="",$class="")
+   {
+	   $html='
+			<div class="'.$class.'">
+			<p>
+			'.$title.'
+			 </p >
+			 <input type="text" name="'.$name.'" value="'.$val.'"/>
+			<div>
+	   ';
+	   return $html;
+   }//end ytext_input
+   
+   function yimg_input($title,$name,$val="",$class="")
+   {
+	   $html='
+			<div class="'.$class.'">
+			<p>
+			'.$title.'
+			 </p >
+			 <input type="text" name="'.$name.'" value="'.$val .'">
+	         <input class="yupload_image_btn button-primary" type="button" value="Upload Image">
+			
+			<div>
+	   ';
+	   return $html; 
+   }//end yimg_input
+   function ysubmit_input()
+   {
+	  	   $html='
+		 	<p class="submit">
+				<input type="submit" class="button-primary" value="Save Options" name="update_theme_options" />
+			 </p>
+	   ';
+	   return $html;  
+   }//end ysubmit_input
 }//end yoption_page
+//////////end options page class////////////////
 
 /////custom widgets funcs////////////////
 
@@ -330,7 +535,7 @@ function y_widget_img($name,$instance,$that)
 	$data = y_widget_get_data($name,$instance,$that);
 	$img = '
 	   <input type="text" name="'.$data['g_name'].'" value="'.$data['i_value'].'"  id= "'.$data['g_id'].'"/>
-	   <input class="yupload_image_btn" type="button" value="Upload Image" />';
+	   <input class="yupload_image_btn button-primary" type="button" value="Upload Image" />';
 	return $img;  
 	
 }//end y_widget_img
@@ -368,4 +573,7 @@ function y_widget_create_selectbox($name, $data,$instance,$that)
 }//end y_widget_create_selectbox
 
 /////end custom widgets funcs////////////////
+
+
+
 ?>
